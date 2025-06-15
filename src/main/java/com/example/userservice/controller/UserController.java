@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*")
 public class UserController {
 
     @Autowired
@@ -51,6 +51,18 @@ public class UserController {
                 .map(ResponseEntity::ok)
                 .map(ResponseEntity.class::cast)
                 .orElse(new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> loginUser(@RequestBody RegisterDto loginDto) {
+        try {
+            User user = userService.validateUser(loginDto.getUsername(), loginDto.getPassword());
+            // Don't return the password hash in the response
+            user.setPassword(null);
+            return ResponseEntity.ok(user);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+        }
     }
 
     @GetMapping("/ping")
