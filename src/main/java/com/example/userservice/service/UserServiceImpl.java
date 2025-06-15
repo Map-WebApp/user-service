@@ -19,7 +19,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User registerUser(User user) {
-        if (userRepository.existsById(user.getUsername())) {
+        if (userRepository.existsByUsername(user.getUsername())) {
             throw new RuntimeException("Username already exists");
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -28,6 +28,18 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Optional<User> findByUsername(String username) {
-        return userRepository.findById(username);
+        return userRepository.findByUsername(username);
+    }
+
+    @Override
+    public User validateUser(String username, String password) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new RuntimeException("Invalid credentials");
+        }
+
+        return user;
     }
 } 
